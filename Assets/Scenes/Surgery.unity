@@ -1202,7 +1202,7 @@ GameObject:
   - component: {fileID: 1180583386}
   - component: {fileID: 1180583385}
   m_Layer: 0
-  m_Name: VR Player
+  m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2594,7 +2594,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3837031862577539429, guid: f91bcb7c3533b7b4ebb923e5ca926df7, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 3837031862577539429, guid: f91bcb7c3533b7b4ebb923e5ca926df7, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2651,7 +2651,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3859831227400672469, guid: 9922be263f21c0f40a9a15222368a1e4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.1
       objectReference: {fileID: 0}
     - target: {fileID: 3859831227400672469, guid: 9922be263f21c0f40a9a15222368a1e4, type: 3}
       propertyPath: m_LocalPosition.y
