@@ -9,7 +9,7 @@ public class EndZone : MonoBehaviour
     {
         if (gameManager == null)
         {
-            gameManager = FindObjectOfType<GameManager>();
+            gameManager = FindFirstObjectByType<GameManager>();
             if (gameManager == null)
             {
                 Debug.LogError("GameManager not found in scene!");

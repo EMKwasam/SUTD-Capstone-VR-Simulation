@@ -24,7 +24,7 @@ public class InputTest : MonoBehaviour
         }
 
         // Find XRInteractionManager in scene
-        interactionManager = FindObjectOfType<XRInteractionManager>();
+        interactionManager = FindFirstObjectByType<XRInteractionManager>();
         if (interactionManager == null)
         {
             Debug.LogWarning("XRInteractionManager not found in scene!");
