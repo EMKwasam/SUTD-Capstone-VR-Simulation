@@ -3,34 +3,39 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 
-public class JoystickDebug : MonoBehaviour
+public class GamepadDebug : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI text;
 
     void Update()
     {
-        var joystick = Joystick.current;
-        if (joystick == null)
+        var gamepad = Gamepad.current;
+        if (gamepad == null)
         {
-            text.text = "No joystick detected.";
+            text.text = "No gamepad detected.";
             return;
         }
 
-        // Read all available joystick inputs
-        Vector2 stick = joystick.stick.ReadValue();
-        float trigger = joystick.trigger.ReadValue();
+        // Read all available gamepad inputs
+        Vector2 leftStick = gamepad.leftStick.ReadValue();
+        Vector2 rightStick = gamepad.rightStick.ReadValue();
+        float leftTrigger = gamepad.leftTrigger.ReadValue();
+        float rightTrigger = gamepad.rightTrigger.ReadValue();
+        Vector2 dpad = gamepad.dpad.ReadValue();
 
         // Build display string with all controls
-        string displayText = $"Joystick: {joystick.displayName}\n";
-        displayText += $"Stick: X={stick.x:0.00}, Y={stick.y:0.00}\n";
-        displayText += $"Trigger: {trigger:0.00}\n";
+        string displayText = $"Gamepad: {gamepad.displayName}\n";
+        displayText += $"Left Stick: X={leftStick.x:0.00}, Y={leftStick.y:0.00}\n";
+        displayText += $"Right Stick: X={rightStick.x:0.00}, Y={rightStick.y:0.00}\n";
+        displayText += $"Left Trigger: {leftTrigger:0.00}\n";
+        displayText += $"Right Trigger: {rightTrigger:0.00}\n";
+        displayText += $"DPad: X={dpad.x:0.00}, Y={dpad.y:0.00}\n";
         displayText += $"\nAll Controls:\n";
 
-        // List all controls available on this joystick
-        foreach (var control in joystick.allControls)
+        // List all controls available on this gamepad
+        foreach (var control in gamepad.allControls)
         {
             string controlName = control.name;
-            string controlPath = control.path;
             
             try
             {
@@ -59,4 +64,3 @@ public class JoystickDebug : MonoBehaviour
         text.text = displayText;
     }
 }
-
