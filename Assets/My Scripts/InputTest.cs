@@ -13,43 +13,75 @@ public class InputTest : MonoBehaviour
     public TextMeshProUGUI buttonPressedText;
     public TextMeshProUGUI interactionStateText;
 
+    [Header("XR Settings")]
+    [Tooltip("Enable XR-specific features. If false, only shows input values.")]
+    public bool enableXRFeatures = true;
+
     private XRInteractionManager interactionManager;
+    private bool isXRAvailable = false;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        if (valueText == null || buttonPressedText == null || interactionStateText == null)
+        if (valueText == null || buttonPressedText == null)
         {
             Debug.LogWarning("UI Text components not assigned!");
         }
 
-        // Find XRInteractionManager in scene
-        interactionManager = FindFirstObjectByType<XRInteractionManager>();
-        if (interactionManager == null)
+        // Enable input action
+        if (testAction.action != null)
         {
-            Debug.LogWarning("XRInteractionManager not found in scene!");
+            testAction.action.Enable();
+        }
+
+        // Check for XR features
+        if (enableXRFeatures)
+        {
+            // Find XRInteractionManager in scene
+            interactionManager = FindFirstObjectByType<XRInteractionManager>();
+            if (interactionManager != null)
+            {
+                isXRAvailable = true;
+                Debug.Log("XR features enabled and XRInteractionManager found.");
+            }
+            else
+            {
+                Debug.LogWarning("XR features enabled but XRInteractionManager not found in scene. Running in non-XR mode.");
+                if (interactionStateText != null)
+                {
+                    interactionStateText.text = "XR Mode: Disabled (No XRInteractionManager found)";
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("Running in non-XR mode.");
+            if (interactionStateText != null)
+            {
+                interactionStateText.text = "XR Mode: Disabled";
+            }
         }
     }
 
     // Update is called once per frame
     void Update()
     {
+        // Read and display input action value
         float value = testAction.action.ReadValue<float>();
         if (valueText != null)
         {
             valueText.text = "Input Action Value: " + value.ToString("F2");
         }
-        Debug.Log("Input Action Value: " + value);
 
+        // Check if button is pressed
         bool buttonPressed = testAction.action.IsPressed();
         if (buttonPressedText != null)
         {
             buttonPressedText.text = "Is Button Pressed: " + buttonPressed.ToString();
         }
-        Debug.Log("Is Button Pressed: " + buttonPressed);
 
-        // Display XR Interaction Manager states
-        if (interactionStateText != null && interactionManager != null)
+        // Display XR Interaction Manager states only if XR is available
+        if (isXRAvailable && interactionStateText != null && interactionManager != null)
         {
             string interactionInfo = GetInteractionState();
             interactionStateText.text = interactionInfo;
@@ -87,5 +119,14 @@ public class InputTest : MonoBehaviour
         }
 
         return info;
+    }
+
+    void OnDestroy()
+    {
+        // Disable input action when destroyed
+        if (testAction.action != null)
+        {
+            testAction.action.Disable();
+        }
     }
 }
