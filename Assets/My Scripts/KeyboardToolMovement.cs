@@ -4,9 +4,9 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody))]
 public class KeyboardToolMovement : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 300f;
-    [SerializeField] private float rotationSpeed = 30f;
-    [SerializeField] private float verticalRotationSpeed = 30f;
+    [SerializeField] private float moveSpeed = 1f;
+    [SerializeField] private float rotationSpeed = 20f;
+    [SerializeField] private float verticalRotationSpeed = 20f;
 
     private Rigidbody rb;
     private Vector2 movementInput;
@@ -81,6 +81,20 @@ public class KeyboardToolMovement : MonoBehaviour
         Vector3 movement = (localRight * movementInput.x + localForward * movementInput.y) * moveSpeed;
         float rotationDelta = rotationInput * rotationSpeed * Time.fixedDeltaTime;
         float verticalRotationDelta = verticalRotationInput * verticalRotationSpeed * Time.fixedDeltaTime;
+        Quaternion rotationStep = Quaternion.Euler(verticalRotationDelta, rotationDelta, 0f);
+
+        if (rb.isKinematic)
+        {
+            Vector3 targetPosition = rb.position + (movement * Time.fixedDeltaTime);
+            rb.MovePosition(targetPosition);
+
+            if (rotationInput != 0f || verticalRotationInput != 0f)
+            {
+                rb.MoveRotation(rb.rotation * rotationStep);
+            }
+
+            return;
+        }
 
         float currentYVelocity = rb.linearVelocity.y;
 
@@ -99,7 +113,7 @@ public class KeyboardToolMovement : MonoBehaviour
         }
         else
         {
-            rb.MoveRotation(rb.rotation * Quaternion.Euler(verticalRotationDelta, rotationDelta, 0f));
+            rb.MoveRotation(rb.rotation * rotationStep);
         }
     }
 }

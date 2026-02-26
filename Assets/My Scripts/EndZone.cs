@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class EndZone : MonoBehaviour
 {
@@ -30,24 +29,36 @@ public class EndZone : MonoBehaviour
     
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Lesion"))
+        if (!other.CompareTag("Lesion"))
         {
-            XRGrabInteractable grab = other.GetComponent<XRGrabInteractable>();
-            
-            // Check if ball is being held (grabbed)
-            if (grab != null && grab.isSelected)
-            {
-                Debug.Log("Lesion removed!");
-                
-                // Award the point
-                if (gameManager != null)
-                {
-                    gameManager.ScorePoint();
-                }
-                
-                // Destroy the ball
-                Destroy(other.gameObject);
-            }
+            return;
         }
+
+        GameObject lesionObject = GetLesionRootObject(other);
+        if (lesionObject == null)
+        {
+            return;
+        }
+
+        Debug.Log("Lesion removed!");
+
+        // Award the point
+        if (gameManager != null)
+        {
+            gameManager.ScorePoint();
+        }
+
+        // Destroy the lesion root object
+        Destroy(lesionObject);
+    }
+
+    private GameObject GetLesionRootObject(Collider other)
+    {
+        if (other.attachedRigidbody != null)
+        {
+            return other.attachedRigidbody.gameObject;
+        }
+
+        return other.gameObject;
     }
 }
