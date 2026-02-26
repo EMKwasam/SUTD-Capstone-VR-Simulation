@@ -82,7 +82,24 @@ public class KeyboardToolMovement : MonoBehaviour
         float rotationDelta = rotationInput * rotationSpeed * Time.fixedDeltaTime;
         float verticalRotationDelta = verticalRotationInput * verticalRotationSpeed * Time.fixedDeltaTime;
 
-        rb.linearVelocity = new Vector3(movement.x, rb.linearVelocity.y, movement.z);
-        rb.MoveRotation(rb.rotation * Quaternion.Euler(verticalRotationDelta, rotationDelta, 0f));
+        float currentYVelocity = rb.linearVelocity.y;
+
+        if (movementInput == Vector2.zero)
+        {
+            rb.linearVelocity = new Vector3(0f, currentYVelocity, 0f);
+        }
+        else
+        {
+            rb.linearVelocity = new Vector3(movement.x, currentYVelocity, movement.z);
+        }
+
+        if (rotationInput == 0f && verticalRotationInput == 0f)
+        {
+            rb.angularVelocity = Vector3.zero;
+        }
+        else
+        {
+            rb.MoveRotation(rb.rotation * Quaternion.Euler(verticalRotationDelta, rotationDelta, 0f));
+        }
     }
 }
