@@ -1,10 +1,14 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
     private int lesionsRemaining = 0;
     private int totalLesions = 0;
+    [SerializeField] private bool enableKeyboardReset = true;
+    [SerializeField] private Key resetKey = Key.R;
     
     public TextMeshProUGUI lesionCountText;
     
@@ -39,6 +43,12 @@ public class GameManager : MonoBehaviour
     {
         // Update lesion count every frame to catch any changes
         CountLesions();
+
+        Keyboard keyboard = Keyboard.current;
+        if (enableKeyboardReset && keyboard != null && keyboard[resetKey].wasPressedThisFrame)
+        {
+            ResetGame();
+        }
     }
     
     public void ScorePoint()
@@ -71,5 +81,11 @@ public class GameManager : MonoBehaviour
     public int GetTotalLesions()
     {
         return totalLesions;
+    }
+
+    public void ResetGame()
+    {
+        Scene currentScene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(currentScene.buildIndex);
     }
 }

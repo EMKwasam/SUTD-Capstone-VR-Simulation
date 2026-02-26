@@ -1730,6 +1730,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f1f8c4a341ba9dc43a38855767f879b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  enableKeyboardReset: 1
+  resetKey: 32
   lesionCountText: {fileID: 381139110}
 --- !u!4 &1164787487
 Transform:
@@ -1764,7 +1766,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!64 &1236172933
 MeshCollider:
   m_ObjectHideFlags: 0
