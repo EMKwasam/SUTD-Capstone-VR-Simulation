@@ -1,0 +1,138 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 20.08.2014 00:01:10
+
+newmtl Tiroid
+	Ns 40.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8000 0.6314 0.3373
+	Kd 0.8000 0.6314 0.3373
+	Ks 0.6000 0.6000 0.6000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Map__5_Stucco.tga
+	map_Kd Map__5_Stucco.tga
+	map_Ke Map__1_Falloff.tga
+	map_bump -bm 0.8000 Map__10_Stucco.tga
+
+newmtl Trachea
+	Ns 40.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8235 0.8235 0.8235
+	Kd 0.8235 0.8235 0.8235
+	Ks 0.5000 0.5000 0.5000
+	Ke 0.0000 0.0000 0.0000
+	map_Ke Map__1_Falloff.tga
+
+newmtl epig
+	Ns 50.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8627 0.4667 0.4745
+	Kd 0.8627 0.4667 0.4745
+	Ks 0.4000 0.4000 0.4000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Map__18_Mix.tga
+	map_Kd Map__18_Mix.tga
+	map_Ke Map__1_Falloff.tga
+
+newmtl vocal
+	Ns 50.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8824 0.8078 0.8118
+	Kd 0.8824 0.8078 0.8118
+	Ks 0.6000 0.6000 0.6000
+	Ke 0.0000 0.0000 0.0000
+	map_Ke Map__1_Falloff.tga
+
+newmtl kas
+	Ns 30.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8000 0.6314 0.3373
+	Kd 0.8000 0.6314 0.3373
+	Ks 0.6000 0.6000 0.6000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Map__22_Noise.tga
+	map_Kd Map__22_Noise.tga
+	map_Ke Map__1_Falloff.tga
+	map_bump -bm 0.3000 Map__23_Noise.tga
+
+newmtl epig44
+	Ns 50.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8392 0.3647 0.3765
+	Kd 0.8392 0.3647 0.3765
+	Ks 0.4000 0.4000 0.4000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Map__13_Mix.tga
+	map_Kd Map__13_Mix.tga
+	map_Ke Map__1_Falloff.tga
+
+newmtl kas_bag2
+	Ns 40.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8000 0.6314 0.3373
+	Kd 0.8000 0.6314 0.3373
+	Ks 0.6000 0.6000 0.6000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Map__19_Noise.tga
+	map_Kd Map__19_Noise.tga
+	map_Ke Map__8_Falloff.tga
+	map_bump -bm 0.5000 Map__19_Noise.tga
+
+newmtl Tiroid2
+	Ns 30.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.9294 0.8706 0.7686
+	Kd 0.9294 0.8706 0.7686
+	Ks 0.6000 0.6000 0.6000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Map__25_Stucco.tga
+	map_Kd Map__25_Stucco.tga
+	map_Ke Map__1_Falloff.tga
+	map_bump -bm 0.5000 Map__24_Stucco.tga
+
+newmtl kas_bag
+	Ns 40.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.8000 0.6314 0.3373
+	Kd 0.8000 0.6314 0.3373
+	Ks 0.6000 0.6000 0.6000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Map__19_Noise.tga
+	map_Kd Map__19_Noise.tga
+	map_Ke Map__8_Falloff.tga
+	map_bump -bm 0.5000 Map__20_Noise.tga
