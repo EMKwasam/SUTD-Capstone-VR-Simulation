@@ -5,8 +5,8 @@ using UnityEngine.InputSystem;
 public class KeyboardToolMovement : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 1f;
-    [SerializeField] private float rotationSpeed = 20f;
-    [SerializeField] private float verticalRotationSpeed = 20f;
+    [SerializeField] private float rotationSpeed = 1f;
+    [SerializeField] private float verticalRotationSpeed = 1f;
 
     private Rigidbody rb;
     private Vector2 movementInput;
