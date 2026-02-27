@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -9,6 +10,10 @@ public class ColliderPickup : MonoBehaviour
     [SerializeField] private LayerMask pickupLayers = ~0;
     [SerializeField] private bool enableDebugLogs = true;
     [SerializeField] private GrabObjectManager grabObjectManager;
+    [SerializeField] private Animator toolAnimator;
+    [SerializeField] private string preGrabTriggerName = "Grab";
+    [SerializeField] private float preGrabDuration = 0.35f;
+    [SerializeField] private bool lockToolControlsDuringPreGrab = true;
 
     private readonly List<Rigidbody> candidateBodies = new List<Rigidbody>();
     private Rigidbody heldRigidbody;
@@ -16,9 +21,17 @@ public class ColliderPickup : MonoBehaviour
     private bool heldUsedGravity;
     private RigidbodyInterpolation heldInterpolation;
     private Collider triggerCollider;
+    private bool isPreGrabAnimating;
+
+    public bool IsInputLocked => lockToolControlsDuringPreGrab && isPreGrabAnimating;
 
     private void Awake()
     {
+        if (toolAnimator == null)
+        {
+            toolAnimator = GetComponentInChildren<Animator>();
+        }
+
         if (grabObjectManager == null)
         {
             grabObjectManager = GetComponent<GrabObjectManager>();
@@ -51,9 +64,18 @@ public class ColliderPickup : MonoBehaviour
 
         if (mouse.leftButton.wasPressedThisFrame)
         {
+            if (isPreGrabAnimating)
+            {
+                if (enableDebugLogs)
+                {
+                    Debug.Log("[ColliderPickup] Ignoring click while pre-grab animation is playing.", this);
+                }
+                return;
+            }
+
             if (heldRigidbody == null)
             {
-                TryPickupClosest();
+                StartPreGrabSequence();
             }
             else
             {
@@ -107,7 +129,7 @@ public class ColliderPickup : MonoBehaviour
         }
     }
 
-    private void TryPickupClosest()
+    private void StartPreGrabSequence()
     {
         if (heldRigidbody != null)
         {
@@ -124,7 +146,7 @@ public class ColliderPickup : MonoBehaviour
         }
 
         CleanupCandidates();
-        if (candidateBodies.Count == 0)
+        if (!TryGetClosestCandidate(out Rigidbody closestBody))
         {
             if (enableDebugLogs)
             {
@@ -133,7 +155,47 @@ public class ColliderPickup : MonoBehaviour
             return;
         }
 
-        Rigidbody closestBody = null;
+        StartCoroutine(PlayPreGrabThenPickup(closestBody));
+    }
+
+    private IEnumerator PlayPreGrabThenPickup(Rigidbody targetBody)
+    {
+        isPreGrabAnimating = true;
+
+        if (toolAnimator != null && !string.IsNullOrEmpty(preGrabTriggerName))
+        {
+            toolAnimator.ResetTrigger(preGrabTriggerName);
+            toolAnimator.SetTrigger(preGrabTriggerName);
+        }
+
+        float delay = Mathf.Max(0f, preGrabDuration);
+        if (delay > 0f)
+        {
+            yield return new WaitForSeconds(delay);
+        }
+
+        isPreGrabAnimating = false;
+
+        if (targetBody == null)
+        {
+            if (enableDebugLogs)
+            {
+                Debug.Log("[ColliderPickup] Pre-grab completed but target no longer exists.", this);
+            }
+            yield break;
+        }
+
+        if (heldRigidbody != null)
+        {
+            yield break;
+        }
+
+        BeginHold(targetBody);
+    }
+
+    private bool TryGetClosestCandidate(out Rigidbody closestBody)
+    {
+        closestBody = null;
         float closestDistanceSq = float.MaxValue;
         Vector3 origin = holdPoint.position;
 
@@ -153,12 +215,12 @@ public class ColliderPickup : MonoBehaviour
             }
         }
 
-        if (closestBody == null)
-        {
-            return;
-        }
+        return closestBody != null;
+    }
 
-        heldRigidbody = closestBody;
+    private void BeginHold(Rigidbody targetBody)
+    {
+        heldRigidbody = targetBody;
         isHoldingObject = true;
         heldUsedGravity = heldRigidbody.useGravity;
         heldInterpolation = heldRigidbody.interpolation;

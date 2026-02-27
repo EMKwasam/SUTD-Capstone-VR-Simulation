@@ -7,6 +7,7 @@ public class KeyboardToolMovement : MonoBehaviour
     [SerializeField] private float moveSpeed = 1f;
     [SerializeField] private float rotationSpeed = 1f;
     [SerializeField] private float verticalRotationSpeed = 1f;
+    [SerializeField] private ColliderPickup colliderPickup;
 
     private Rigidbody rb;
     private Vector2 movementInput;
@@ -16,6 +17,11 @@ public class KeyboardToolMovement : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+
+        if (colliderPickup == null)
+        {
+            colliderPickup = GetComponent<ColliderPickup>();
+        }
     }
 
     private void Update()
@@ -23,6 +29,11 @@ public class KeyboardToolMovement : MonoBehaviour
         movementInput = Vector2.zero;
         rotationInput = 0f;
         verticalRotationInput = 0f;
+
+        if (colliderPickup != null && colliderPickup.IsInputLocked)
+        {
+            return;
+        }
 
         var keyboard = Keyboard.current;
         if (keyboard == null)
