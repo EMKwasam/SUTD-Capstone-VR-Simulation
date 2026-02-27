@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 [RequireComponent(typeof(Collider))]
 public class ColliderPickup : MonoBehaviour
@@ -10,6 +11,10 @@ public class ColliderPickup : MonoBehaviour
     [SerializeField] private LayerMask pickupLayers = ~0;
     [SerializeField] private bool enableDebugLogs = true;
     [SerializeField] private GrabObjectManager grabObjectManager;
+    [SerializeField] private TextMeshProUGUI pickupStatusText;
+    [SerializeField] private string outOfRangeMessage = "Move tool to grabbing distance";
+    [SerializeField] private string inRangeMessage = "press button to grab lesion";
+    [SerializeField] private string grabbedMessage = "move tool to end zone";
     [SerializeField] private Animator toolAnimator;
     [SerializeField] private string preGrabTriggerName = "Grab";
     [SerializeField] private float preGrabDuration = 0.35f;
@@ -22,8 +27,16 @@ public class ColliderPickup : MonoBehaviour
     private RigidbodyInterpolation heldInterpolation;
     private Collider triggerCollider;
     private bool isPreGrabAnimating;
+    private PickupUiState currentUiState = (PickupUiState)(-1);
 
     public bool IsInputLocked => lockToolControlsDuringPreGrab && isPreGrabAnimating;
+
+    private enum PickupUiState
+    {
+        OutOfRange,
+        InRange,
+        Grabbed
+    }
 
     private void Awake()
     {
@@ -50,11 +63,20 @@ public class ColliderPickup : MonoBehaviour
                 Debug.Log($"[ColliderPickup] Set collider '{triggerCollider.name}' to trigger.", this);
             }
         }
+
+        UpdatePickupStatusText();
+    }
+
+    private void Start()
+    {
+        UpdatePickupStatusText();
     }
 
     private void Update()
     {
         HandleExternallyReleasedObject();
+        CleanupCandidates();
+        UpdatePickupStatusText();
 
         var mouse = Mouse.current;
         if (mouse == null)
@@ -127,6 +149,8 @@ public class ColliderPickup : MonoBehaviour
         {
             Debug.Log($"[ColliderPickup] Out of range: {body.name}", body);
         }
+
+        UpdatePickupStatusText();
     }
 
     private void StartPreGrabSequence()
@@ -243,6 +267,8 @@ public class ColliderPickup : MonoBehaviour
         {
             grabObjectManager.OnObjectGrabbed();
         }
+
+        UpdatePickupStatusText();
     }
 
     private void ReleaseHeldObject()
@@ -292,6 +318,8 @@ public class ColliderPickup : MonoBehaviour
         {
             grabObjectManager.OnObjectReleased();
         }
+
+        UpdatePickupStatusText();
     }
 
     private bool IsLayerAllowed(int layer)
@@ -302,5 +330,46 @@ public class ColliderPickup : MonoBehaviour
     private void CleanupCandidates()
     {
         candidateBodies.RemoveAll(body => body == null);
+    }
+
+    private void UpdatePickupStatusText()
+    {
+        if (pickupStatusText == null)
+        {
+            return;
+        }
+
+        PickupUiState nextState;
+        if (heldRigidbody != null || isHoldingObject)
+        {
+            nextState = PickupUiState.Grabbed;
+        }
+        else if (candidateBodies.Count > 0)
+        {
+            nextState = PickupUiState.InRange;
+        }
+        else
+        {
+            nextState = PickupUiState.OutOfRange;
+        }
+
+        if (nextState == currentUiState)
+        {
+            return;
+        }
+
+        currentUiState = nextState;
+        switch (currentUiState)
+        {
+            case PickupUiState.Grabbed:
+                pickupStatusText.text = grabbedMessage;
+                break;
+            case PickupUiState.InRange:
+                pickupStatusText.text = inRangeMessage;
+                break;
+            default:
+                pickupStatusText.text = outOfRangeMessage;
+                break;
+        }
     }
 }
