@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Surgery (Non-VR).unity
+    path: Assets/Scenes/Surgery (Keyboard).unity
     guid: db69ad97382a40a49adc5ff81e651504
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
