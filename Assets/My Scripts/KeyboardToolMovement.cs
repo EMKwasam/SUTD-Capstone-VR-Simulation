@@ -41,19 +41,19 @@ public class KeyboardToolMovement : MonoBehaviour
             return;
         }
 
-        if (keyboard.wKey.isPressed)
+        if (keyboard.dKey.isPressed)
         {
             movementInput.y += 1f;
         }
-        if (keyboard.sKey.isPressed)
+        if (keyboard.aKey.isPressed)
         {
             movementInput.y -= 1f;
         }
-        if (keyboard.aKey.isPressed)
+        if (keyboard.wKey.isPressed)
         {
             movementInput.x -= 1f;
         }
-        if (keyboard.dKey.isPressed)
+        if (keyboard.sKey.isPressed)
         {
             movementInput.x += 1f;
         }
