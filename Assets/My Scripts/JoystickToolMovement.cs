@@ -4,7 +4,7 @@ using UnityEngine.InputSystem;
 public class JoystickToolMovement : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float deadZone = 0.1f;
+    [SerializeField, Range(0f, 1f)] private float fullDeflectionThreshold = 0.95f;
     [SerializeField] private bool enableDebugLogging = true;
     [SerializeField] private float debugLogInterval = 0.5f; // Log every 0.5 seconds
 
@@ -12,6 +12,9 @@ public class JoystickToolMovement : MonoBehaviour
     private Rigidbody rb;
     private bool joystickDetectedLastFrame = false;
     private float lastDebugLogTime = 0f;
+    private bool isMovementLocked;
+
+    public bool IsMovementLocked => isMovementLocked;
 
     private void Start()
     {
@@ -83,8 +86,12 @@ public class JoystickToolMovement : MonoBehaviour
             joystickDetectedLastFrame = true;
         }
 
-        // Read stick input directly from joystick
-        input = joystick.stick.ReadValue();
+        // Read stick input directly from joystick.
+        Vector2 rawInput = joystick.stick.ReadValue();
+        input = new Vector2(
+            GetFullDeflectionAxis(rawInput.x),
+            GetFullDeflectionAxis(rawInput.y)
+        );
 
         // Enhanced debugging with time-based throttling
         if (enableDebugLogging && Time.time - lastDebugLogTime >= debugLogInterval)
@@ -92,7 +99,8 @@ public class JoystickToolMovement : MonoBehaviour
             lastDebugLogTime = Time.time;
             
             Debug.Log($"=== Joystick Debug (t={Time.time:F2}s) ===");
-            Debug.Log($"Raw Stick Value: X={input.x:F3}, Y={input.y:F3}, Magnitude={input.magnitude:F3}");
+            Debug.Log($"Raw Stick Value: X={rawInput.x:F3}, Y={rawInput.y:F3}, Magnitude={rawInput.magnitude:F3}");
+            Debug.Log($"Full-deflection filtered value: X={input.x:F3}, Y={input.y:F3}");
             
             // Check if stick control is actually available and working
             if (joystick.stick == null)
@@ -120,40 +128,47 @@ public class JoystickToolMovement : MonoBehaviour
             }
         }
 
-        // Apply dead zone
-        if (input.magnitude < deadZone)
+        return input;
+    }
+
+    private float GetFullDeflectionAxis(float value)
+    {
+        // Treat near-full deflection as full to handle real joystick noise.
+        if (value >= fullDeflectionThreshold)
         {
-            if (enableDebugLogging && input.magnitude > 0.01f)
-            {
-                Debug.Log($"Input magnitude {input.magnitude:F3} below dead zone threshold {deadZone}, setting to zero.");
-            }
-            input = Vector2.zero;
-        }
-        else
-        {
-            // Normalize to get consistent movement speed
-            Vector2 originalInput = input;
-            input = input.normalized;
-            
-            if (enableDebugLogging)
-            {
-                Debug.Log($"Input passed dead zone! Original: ({originalInput.x:F3}, {originalInput.y:F3}), Normalized: ({input.x:F3}, {input.y:F3})");
-            }
+            return 1f;
         }
 
-        return input;
+        if (value <= -fullDeflectionThreshold)
+        {
+            return -1f;
+        }
+
+        return 0f;
     }
 
     private void MoveObject()
     {
-        if (rb == null || joystickInput == Vector2.zero)
+        if (rb == null)
         {
             return;
         }
 
-        // Create movement vector based on joystick input
-        // X axis = left/right (A/D or left stick X)
-        // Y axis = forward/backward (W/S or left stick Y)
+        if (isMovementLocked)
+        {
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            return;
+        }
+
+        if (joystickInput == Vector2.zero)
+        {
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+            return;
+        }
+
+        // Requested mapping:
+        // - Forward when stick Y is positive, backward when Y is negative
+        // - Left when stick X is positive, right when X is negative
         Vector3 movement = new Vector3(joystickInput.x, 0, joystickInput.y) * moveSpeed;
 
         // Apply movement to rigidbody
@@ -166,9 +181,12 @@ public class JoystickToolMovement : MonoBehaviour
         moveSpeed = newSpeed;
     }
 
-    // Adjust dead zone sensitivity at runtime
-    public void SetDeadZone(float newDeadZone)
+    public void SetMovementLocked(bool locked)
     {
-        deadZone = Mathf.Clamp01(newDeadZone);
+        isMovementLocked = locked;
+        if (isMovementLocked && rb != null)
+        {
+            rb.linearVelocity = new Vector3(0f, rb.linearVelocity.y, 0f);
+        }
     }
 }
