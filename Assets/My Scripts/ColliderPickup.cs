@@ -27,6 +27,8 @@ public class ColliderPickup : MonoBehaviour
     private RigidbodyInterpolation heldInterpolation;
     private Collider triggerCollider;
     private bool isPreGrabAnimating;
+    private Quaternion lastHoldPointRotation;
+    private bool hasLastHoldPointRotation;
     private PickupUiState currentUiState = (PickupUiState)(-1);
 
     public bool IsInputLocked => lockToolControlsDuringPreGrab && isPreGrabAnimating;
@@ -114,7 +116,22 @@ public class ColliderPickup : MonoBehaviour
         }
 
         heldRigidbody.MovePosition(holdPoint.position);
-        heldRigidbody.MoveRotation(holdPoint.rotation);
+
+        Quaternion currentHoldRotation = holdPoint.rotation;
+        if (!hasLastHoldPointRotation)
+        {
+            lastHoldPointRotation = currentHoldRotation;
+            hasLastHoldPointRotation = true;
+            return;
+        }
+
+        Quaternion rotationDelta = currentHoldRotation * Quaternion.Inverse(lastHoldPointRotation);
+        if (Quaternion.Angle(Quaternion.identity, rotationDelta) > 0.001f)
+        {
+            heldRigidbody.MoveRotation(rotationDelta * heldRigidbody.rotation);
+        }
+
+        lastHoldPointRotation = currentHoldRotation;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -246,6 +263,15 @@ public class ColliderPickup : MonoBehaviour
     {
         heldRigidbody = targetBody;
         isHoldingObject = true;
+        if (holdPoint != null)
+        {
+            lastHoldPointRotation = holdPoint.rotation;
+            hasLastHoldPointRotation = true;
+        }
+        else
+        {
+            hasLastHoldPointRotation = false;
+        }
         heldUsedGravity = heldRigidbody.useGravity;
         heldInterpolation = heldRigidbody.interpolation;
 
@@ -306,6 +332,7 @@ public class ColliderPickup : MonoBehaviour
     {
         heldRigidbody = null;
         isHoldingObject = false;
+        hasLastHoldPointRotation = false;
 
         if (enableDebugLogs)
         {
