@@ -981,7 +981,7 @@ MonoBehaviour:
   grabbedTriggerName: Grabbed
   preGrabDuration: 0.35
   lockToolControlsDuringPreGrab: 1
-  joystickToolMovement: {fileID: 1241154559}
+  joystickToolMovement: {fileID: 0}
 --- !u!1 &571554938
 GameObject:
   m_ObjectHideFlags: 0
@@ -2013,15 +2013,13 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1241154555}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bfb337204d5fa194bbeee2a3f7762ca5, type: 3}
+  m_Script: {fileID: 11500000, guid: 1c080e77b23b4aa4baa97db1cc5d3027, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::JoystickToolMovement
-  moveSpeed: 0.15
-  fullDeflectionThreshold: 0.5
-  enableDebugLogging: 0
-  debugLogInterval: 1
+  m_EditorClassIdentifier: Assembly-CSharp::XRToolGrab
+  enableDebugLogging: 1
+  debugLogInterval: 0.5
 --- !u!1 &1269812821
 GameObject:
   m_ObjectHideFlags: 0
