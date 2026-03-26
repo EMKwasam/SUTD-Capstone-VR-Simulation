@@ -166,7 +166,7 @@ public class JoystickToolMovement : MonoBehaviour
             return;
         }
 
-        // Requested mapping:
+        // Note on mapping mapping:
         // - Forward when stick Y is positive, backward when Y is negative
         // - Left when stick X is positive, right when X is negative
         Vector3 movement = new Vector3(joystickInput.x, 0, joystickInput.y) * moveSpeed;
