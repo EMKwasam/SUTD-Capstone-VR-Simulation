@@ -27,6 +27,10 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     [SerializeField] private bool enablePositionSmoothing = true;
     [SerializeField] [Min(0.0001f)] private float positionSmoothTime = 0.04f; // Lower = more responsive, less smooth
 
+    [Header("Position Scaling")]
+    [SerializeField] private bool enablePositionScaling = false;
+    [SerializeField] private float positionScaleMultiplier = 1f;
+
     [Header("Rotation Smoothing")]
     [SerializeField] private bool enableRotationSmoothing = true;
     [SerializeField] [Min(0.0001f)] private float rotationSmoothSpeed = 18f; // Higher = more responsive
@@ -128,7 +132,9 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
         Vector3 relativePosition = pose.position - calibrationPosition;
         Quaternion relativeRotation = Quaternion.Inverse(calibrationRotation) * pose.rotation;
 
-        Vector3 desiredPosition = relativePosition;
+        Vector3 desiredPosition = enablePositionScaling
+            ? relativePosition * positionScaleMultiplier
+            : relativePosition;
         Quaternion desiredRotation = relativeRotation;
 
         // Smooth position if enabled
@@ -330,7 +336,7 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
         Vector3 sourcePosition = new Vector3(packet.px, packet.py, packet.pz);
         Quaternion sourceRotation = new Quaternion(packet.qx, packet.qy, packet.qz, packet.qw);
 
-        // Convert position (invert Y)
+        // Convert position using configured camera-to-Unity axis mapping
         Vector3 unityPosition = SourceVectorToUnity(sourcePosition);
 
         // Convert rotation via basis vectors
@@ -369,9 +375,9 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     private Vector3 SourceVectorToUnity(Vector3 sourceVector)
     {
         return new Vector3(
+            -sourceVector.z,
             sourceVector.x,
-            -sourceVector.y,
-            sourceVector.z
+            sourceVector.y
         );
     }
 
