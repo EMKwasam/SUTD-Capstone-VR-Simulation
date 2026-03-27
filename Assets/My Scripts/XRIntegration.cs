@@ -375,8 +375,8 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     private Vector3 SourceVectorToUnity(Vector3 sourceVector)
     {
         return new Vector3(
-            -sourceVector.z,
-            sourceVector.x,
+            sourceVector.z,
+            -sourceVector.x,
             sourceVector.y
         );
     }
