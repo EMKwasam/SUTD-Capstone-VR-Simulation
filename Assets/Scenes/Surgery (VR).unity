@@ -1476,8 +1476,12 @@ MonoBehaviour:
   listenPort: 5005
   targetObject: {fileID: 1241154556}
   autoCalibrateOnFirstPacket: 1
-  enablePositionSmoothing: 0
+  enablePositionSmoothing: 1
+  positionSmoothingMethod: 1
   positionSmoothTime: 0.04
+  positionEmaAlpha: 0.2
+  enablePositionScaling: 0
+  positionScaleMultiplier: 1
   enableRotationSmoothing: 0
   rotationSmoothSpeed: 18
   logPackets: 1

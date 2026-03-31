@@ -13,6 +13,15 @@ using UnityEngine;
 /// </summary>
 public class UdpTrackedPoseReceiver : MonoBehaviour
 {
+    /// <summary>
+    /// Enum for selecting position smoothing algorithm.
+    /// </summary>
+    public enum PositionSmoothingMethod
+    {
+        SmoothDamp,  // Unity's built-in critically damped spring
+        EMA          // Exponential Moving Average
+    }
+
     [Header("Networking")]
     [SerializeField] private string listenAddress = "127.0.0.1"; // IP to bind to (localhost for same machine)
     [SerializeField] private int listenPort = 5005;              // UDP port to listen on
@@ -25,7 +34,9 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
 
     [Header("Position Smoothing")]
     [SerializeField] private bool enablePositionSmoothing = true;
+    [SerializeField] private PositionSmoothingMethod positionSmoothingMethod = PositionSmoothingMethod.SmoothDamp;
     [SerializeField] [Min(0.0001f)] private float positionSmoothTime = 0.04f; // Lower = more responsive, less smooth
+    [SerializeField] [Range(0f, 1f)] private float positionEmaAlpha = 0.2f; // Higher alpha = more responsive to new values
 
     [Header("Position Scaling")]
     [SerializeField] private bool enablePositionScaling = false;
@@ -140,12 +151,23 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
         // Smooth position if enabled
         if (enablePositionSmoothing)
         {
-            currentSmoothedPosition = Vector3.SmoothDamp(
-                currentSmoothedPosition,
-                desiredPosition,
-                ref positionVelocity,
-                positionSmoothTime
-            );
+            if (positionSmoothingMethod == PositionSmoothingMethod.SmoothDamp)
+            {
+                currentSmoothedPosition = Vector3.SmoothDamp(
+                    currentSmoothedPosition,
+                    desiredPosition,
+                    ref positionVelocity,
+                    positionSmoothTime
+                );
+            }
+            else if (positionSmoothingMethod == PositionSmoothingMethod.EMA)
+            {
+                currentSmoothedPosition = Vector3.Lerp(
+                    currentSmoothedPosition,
+                    desiredPosition,
+                    positionEmaAlpha
+                );
+            }
         }
         else
         {
@@ -359,6 +381,9 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
         unityUp = Vector3.Cross(unityForward, unityRight).normalized;
 
         Quaternion unityRotation = Quaternion.LookRotation(unityForward, unityUp);
+        
+        // Invert rotation to account for reflection in position coordinate transformation
+        unityRotation = Quaternion.Inverse(unityRotation);
 
         return new PoseData
         {
