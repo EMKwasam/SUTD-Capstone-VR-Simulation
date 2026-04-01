@@ -6,7 +6,7 @@ using System.Threading;
 using UnityEngine;
 
 /// <summary>
-/// Receives pose data (position + rotation) over UDP,
+/// Receives position data over UDP,
 /// converts it from camera space into Unity space,
 /// applies calibration (relative motion),
 /// and optionally smooths before applying to a target Transform.
@@ -18,8 +18,8 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     /// </summary>
     public enum PositionSmoothingMethod
     {
-        SmoothDamp,  // Unity's built-in critically damped spring
-        EMA          // Exponential Moving Average
+        EMA = 1,     // Exponential Moving Average
+        OneEuro = 2  // Adaptive One Euro filter
     }
 
     [Header("Networking")]
@@ -27,24 +27,31 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     [SerializeField] private int listenPort = 5005;              // UDP port to listen on
 
     [Header("Target")]
-    [SerializeField] private Transform targetObject;             // Object to move/rotate in Unity
+    [SerializeField] private Transform targetObject;             // Object to move in Unity
 
     [Header("Calibration")]
     [SerializeField] private bool autoCalibrateOnFirstPacket = true; // Auto-set origin from first received pose
 
     [Header("Position Smoothing")]
     [SerializeField] private bool enablePositionSmoothing = true;
-    [SerializeField] private PositionSmoothingMethod positionSmoothingMethod = PositionSmoothingMethod.SmoothDamp;
-    [SerializeField] [Min(0.0001f)] private float positionSmoothTime = 0.04f; // Lower = more responsive, less smooth
+    [SerializeField] private PositionSmoothingMethod positionSmoothingMethod = PositionSmoothingMethod.OneEuro;
     [SerializeField] [Range(0f, 1f)] private float positionEmaAlpha = 0.2f; // Higher alpha = more responsive to new values
+
+    [Header("One Euro Position Smoothing (30 Hz Defaults)")]
+    [SerializeField] [Min(0.01f)] private float oneEuroMinCutoff = 1.1f;
+    [SerializeField] [Min(0f)] private float oneEuroBeta = 0.05f;
+    [SerializeField] [Min(0.01f)] private float oneEuroDerivativeCutoff = 1.0f;
+
+    [Header("Position Prefilter")]
+    [SerializeField] private bool enableMedianPositionPrefilter = false;
 
     [Header("Position Scaling")]
     [SerializeField] private bool enablePositionScaling = false;
     [SerializeField] private float positionScaleMultiplier = 1f;
 
-    [Header("Rotation Smoothing")]
-    [SerializeField] private bool enableRotationSmoothing = true;
-    [SerializeField] [Min(0.0001f)] private float rotationSmoothSpeed = 18f; // Higher = more responsive
+    [Header("Deadband")]
+    [SerializeField] private bool enableDeadband = false;
+    [SerializeField] [Min(0f)] private float positionDeadbandMeters = 0.003f;
 
     [Header("Debug")]
     [SerializeField] private bool logPackets = false; // Log incoming JSON packets
@@ -59,7 +66,6 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     {
         public int seq;
         public float px, py, pz;
-        public float qw, qx, qy, qz;
     }
 
     /// <summary>
@@ -69,8 +75,6 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     {
         public int seq;
         public Vector3 position;
-        public Quaternion rotation;
-        public double receivedTime;
     }
 
     // Networking
@@ -86,12 +90,22 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     // Calibration state
     private bool isCalibrated;
     private Vector3 calibrationPosition;
-    private Quaternion calibrationRotation;
 
     // Smoothing state
     private Vector3 currentSmoothedPosition;
-    private Quaternion currentSmoothedRotation;
-    private Vector3 positionVelocity;
+
+    // Jitter filtering state
+    private readonly Vector3[] medianPositionBuffer = new Vector3[3];
+    private int medianPositionCount;
+    private int medianPositionWriteIndex;
+    private bool hasDeadbandReference;
+    private Vector3 deadbandReferencePosition;
+
+    // One Euro state
+    private bool oneEuroInitialized;
+    private Vector3 oneEuroPreviousRawPosition;
+    private Vector3 oneEuroFilteredPosition;
+    private Vector3 oneEuroFilteredDerivative;
 
     private void Start()
     {
@@ -105,10 +119,17 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
 
         // Initialize smoothing state from current transform
         currentSmoothedPosition = targetObject.localPosition;
-        currentSmoothedRotation = targetObject.localRotation;
 
         // Start background UDP listener
         StartReceiver();
+    }
+
+    private void OnValidate()
+    {
+        if (!Enum.IsDefined(typeof(PositionSmoothingMethod), positionSmoothingMethod))
+        {
+            positionSmoothingMethod = PositionSmoothingMethod.OneEuro;
+        }
     }
 
     private void Update()
@@ -141,26 +162,29 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
 
         // Convert absolute pose into motion relative to calibration origin
         Vector3 relativePosition = pose.position - calibrationPosition;
-        Quaternion relativeRotation = Quaternion.Inverse(calibrationRotation) * pose.rotation;
-
         Vector3 desiredPosition = enablePositionScaling
             ? relativePosition * positionScaleMultiplier
             : relativePosition;
-        Quaternion desiredRotation = relativeRotation;
+
+        if (enableMedianPositionPrefilter)
+        {
+            desiredPosition = ApplyMedianPositionPrefilter(desiredPosition);
+        }
+
+        if (enableDeadband)
+        {
+            desiredPosition = ApplyDeadband(desiredPosition);
+        }
+        else
+        {
+            deadbandReferencePosition = desiredPosition;
+            hasDeadbandReference = true;
+        }
 
         // Smooth position if enabled
         if (enablePositionSmoothing)
         {
-            if (positionSmoothingMethod == PositionSmoothingMethod.SmoothDamp)
-            {
-                currentSmoothedPosition = Vector3.SmoothDamp(
-                    currentSmoothedPosition,
-                    desiredPosition,
-                    ref positionVelocity,
-                    positionSmoothTime
-                );
-            }
-            else if (positionSmoothingMethod == PositionSmoothingMethod.EMA)
+            if (positionSmoothingMethod == PositionSmoothingMethod.EMA)
             {
                 currentSmoothedPosition = Vector3.Lerp(
                     currentSmoothedPosition,
@@ -168,27 +192,18 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
                     positionEmaAlpha
                 );
             }
+            else if (positionSmoothingMethod == PositionSmoothingMethod.OneEuro)
+            {
+                currentSmoothedPosition = ApplyOneEuroPositionFilter(desiredPosition, Time.deltaTime);
+            }
         }
         else
         {
             currentSmoothedPosition = desiredPosition;
-            positionVelocity = Vector3.zero;
-        }
-
-        // Smooth rotation if enabled
-        if (enableRotationSmoothing)
-        {
-            float t = 1f - Mathf.Exp(-rotationSmoothSpeed * Time.deltaTime);
-            currentSmoothedRotation = Quaternion.Slerp(currentSmoothedRotation, desiredRotation, t);
-        }
-        else
-        {
-            currentSmoothedRotation = desiredRotation;
         }
 
         // Apply final result to target
         targetObject.localPosition = currentSmoothedPosition;
-        targetObject.localRotation = currentSmoothedRotation;
     }
 
     /// <summary>
@@ -220,7 +235,7 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     public void ResetCalibration()
     {
         isCalibrated = false;
-        positionVelocity = Vector3.zero;
+        ResetJitterFilters();
 
         if (logCalibration)
         {
@@ -234,21 +249,111 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     private void CaptureCalibration(PoseData pose)
     {
         calibrationPosition = pose.position;
-        calibrationRotation = pose.rotation;
         isCalibrated = true;
 
         // Reset smoothing and output transform
         currentSmoothedPosition = Vector3.zero;
-        currentSmoothedRotation = Quaternion.identity;
-        positionVelocity = Vector3.zero;
+        ResetJitterFilters();
 
         targetObject.localPosition = Vector3.zero;
-        targetObject.localRotation = Quaternion.identity;
 
         if (logCalibration)
         {
             Debug.Log($"Calibration captured at seq={pose.seq}");
         }
+    }
+
+    private Vector3 ApplyMedianPositionPrefilter(Vector3 sample)
+    {
+        medianPositionBuffer[medianPositionWriteIndex] = sample;
+        medianPositionWriteIndex = (medianPositionWriteIndex + 1) % medianPositionBuffer.Length;
+
+        if (medianPositionCount < medianPositionBuffer.Length)
+        {
+            medianPositionCount++;
+            return sample;
+        }
+
+        Vector3 a = medianPositionBuffer[0];
+        Vector3 b = medianPositionBuffer[1];
+        Vector3 c = medianPositionBuffer[2];
+
+        return new Vector3(
+            MedianOfThree(a.x, b.x, c.x),
+            MedianOfThree(a.y, b.y, c.y),
+            MedianOfThree(a.z, b.z, c.z)
+        );
+    }
+
+    private static float MedianOfThree(float a, float b, float c)
+    {
+        return a + b + c - Mathf.Min(a, Mathf.Min(b, c)) - Mathf.Max(a, Mathf.Max(b, c));
+    }
+
+    private Vector3 ApplyDeadband(Vector3 position)
+    {
+        if (!hasDeadbandReference)
+        {
+            deadbandReferencePosition = position;
+            hasDeadbandReference = true;
+            return position;
+        }
+
+        float positionThresholdSqr = positionDeadbandMeters * positionDeadbandMeters;
+        if ((position - deadbandReferencePosition).sqrMagnitude < positionThresholdSqr)
+        {
+            position = deadbandReferencePosition;
+        }
+        else
+        {
+            deadbandReferencePosition = position;
+        }
+
+        return position;
+    }
+
+    private void ResetJitterFilters()
+    {
+        medianPositionCount = 0;
+        medianPositionWriteIndex = 0;
+        hasDeadbandReference = false;
+        deadbandReferencePosition = Vector3.zero;
+        oneEuroInitialized = false;
+        oneEuroPreviousRawPosition = Vector3.zero;
+        oneEuroFilteredPosition = Vector3.zero;
+        oneEuroFilteredDerivative = Vector3.zero;
+    }
+
+    private Vector3 ApplyOneEuroPositionFilter(Vector3 rawPosition, float deltaTime)
+    {
+        float dt = Mathf.Max(0.0001f, deltaTime);
+
+        if (!oneEuroInitialized)
+        {
+            oneEuroInitialized = true;
+            oneEuroPreviousRawPosition = rawPosition;
+            oneEuroFilteredPosition = rawPosition;
+            oneEuroFilteredDerivative = Vector3.zero;
+            return rawPosition;
+        }
+
+        Vector3 rawDerivative = (rawPosition - oneEuroPreviousRawPosition) / dt;
+        float derivativeAlpha = ComputeOneEuroAlpha(oneEuroDerivativeCutoff, dt);
+        oneEuroFilteredDerivative = Vector3.Lerp(oneEuroFilteredDerivative, rawDerivative, derivativeAlpha);
+
+        float adaptiveCutoff = oneEuroMinCutoff + oneEuroBeta * oneEuroFilteredDerivative.magnitude;
+        float positionAlpha = ComputeOneEuroAlpha(adaptiveCutoff, dt);
+        oneEuroFilteredPosition = Vector3.Lerp(oneEuroFilteredPosition, rawPosition, positionAlpha);
+
+        oneEuroPreviousRawPosition = rawPosition;
+        return oneEuroFilteredPosition;
+    }
+
+    private static float ComputeOneEuroAlpha(float cutoff, float deltaTime)
+    {
+        float safeCutoff = Mathf.Max(0.0001f, cutoff);
+        float tau = 1f / (2f * Mathf.PI * safeCutoff);
+        return 1f / (1f + tau / deltaTime);
     }
 
     /// <summary>
@@ -346,7 +451,7 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     }
 
     /// <summary>
-    /// Converts incoming camera-space pose into Unity-space pose.
+    /// Converts incoming camera-space position into Unity-space position.
     /// </summary>
     private PoseData ConvertPacketToUnityPose(PosePacket packet)
     {
@@ -356,41 +461,14 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
         // +Z = forward
 
         Vector3 sourcePosition = new Vector3(packet.px, packet.py, packet.pz);
-        Quaternion sourceRotation = new Quaternion(packet.qx, packet.qy, packet.qz, packet.qw);
 
         // Convert position using configured camera-to-Unity axis mapping
         Vector3 unityPosition = SourceVectorToUnity(sourcePosition);
 
-        // Convert rotation via basis vectors
-        Vector3 sourceRight = sourceRotation * Vector3.right;
-        Vector3 sourceDown = sourceRotation * Vector3.up;
-        Vector3 sourceForward = sourceRotation * Vector3.forward;
-
-        Vector3 unityRight = SourceVectorToUnity(sourceRight);
-        Vector3 unityDown = SourceVectorToUnity(sourceDown);
-        Vector3 unityForward = SourceVectorToUnity(sourceForward);
-
-        // Unity up is inverse of "down"
-        Vector3 unityUp = -unityDown;
-
-        // Normalize and re-orthogonalize to avoid drift
-        unityForward.Normalize();
-        unityUp.Normalize();
-
-        unityRight = Vector3.Cross(unityUp, unityForward).normalized;
-        unityUp = Vector3.Cross(unityForward, unityRight).normalized;
-
-        Quaternion unityRotation = Quaternion.LookRotation(unityForward, unityUp);
-        
-        // Invert rotation to account for reflection in position coordinate transformation
-        unityRotation = Quaternion.Inverse(unityRotation);
-
         return new PoseData
         {
             seq = packet.seq,
-            position = unityPosition,
-            rotation = unityRotation,
-            receivedTime = 0
+            position = unityPosition
         };
     }
 

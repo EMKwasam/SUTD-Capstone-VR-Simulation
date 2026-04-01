@@ -1477,13 +1477,16 @@ MonoBehaviour:
   targetObject: {fileID: 1241154556}
   autoCalibrateOnFirstPacket: 1
   enablePositionSmoothing: 1
-  positionSmoothingMethod: 1
-  positionSmoothTime: 0.04
-  positionEmaAlpha: 0.2
-  enablePositionScaling: 0
-  positionScaleMultiplier: 1
-  enableRotationSmoothing: 0
-  rotationSmoothSpeed: 18
+  positionSmoothingMethod: 2
+  positionEmaAlpha: 0.15
+  oneEuroMinCutoff: 1.1
+  oneEuroBeta: 0.05
+  oneEuroDerivativeCutoff: 1
+  enableMedianPositionPrefilter: 1
+  enablePositionScaling: 1
+  positionScaleMultiplier: 2
+  enableDeadband: 1
+  positionDeadbandMeters: 0.01
   logPackets: 1
   logCalibration: 1
 --- !u!4 &788635173
