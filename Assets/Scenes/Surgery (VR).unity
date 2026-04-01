@@ -910,6 +910,7 @@ GameObject:
   - component: {fileID: 480423913}
   - component: {fileID: 480423915}
   - component: {fileID: 480423916}
+  - component: {fileID: 480423917}
   m_Layer: 0
   m_Name: Grabpoint
   m_TagString: Untagged
@@ -982,6 +983,33 @@ MonoBehaviour:
   preGrabDuration: 0.35
   lockToolControlsDuringPreGrab: 1
   joystickToolMovement: {fileID: 0}
+--- !u!114 &480423917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480423912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a862bdfd02744e43afe2b7fa44aeb3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColliderPickupMouse
+  holdPoint: {fileID: 1629714653}
+  grabObjectManager: {fileID: 585374695}
+  toolAnimator: {fileID: 471620869}
+  pickupStatusText: {fileID: 2019468352}
+  pickupLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  enableDebugLogs: 1
+  preGrabTriggerName: Grab
+  grabbedTriggerName: Grabbed
+  preGrabDuration: 0.35
+  outOfRangeMessage: Move tool to grabbing distance
+  inRangeMessage: Press trigger to cut
+  awaitingConfirmMessage: Press trigger to cut
+  grabbedMessage: move tool to end zone
 --- !u!1 &571554938
 GameObject:
   m_ObjectHideFlags: 0
@@ -1428,7 +1456,7 @@ GameObject:
   m_Component:
   - component: {fileID: 788635173}
   - component: {fileID: 788635172}
-  - component: {fileID: 788635171}
+  - component: {fileID: 788635174}
   m_Layer: 0
   m_Name: XR Controller
   m_TagString: Untagged
@@ -1436,30 +1464,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &788635171
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 788635170}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: becbe39f8a5a744449e900937a361d68, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::UdpTrackedPoseTestSender
-  targetIp: 127.0.0.1
-  targetPort: 5005
-  sendRateHz: 30
-  moveSpeed: 0.75
-  rotateSpeed: 90
-  useAutoMotion: 0
-  autoMotionRadius: 0.2
-  autoMotionHeight: 0.1
-  autoMotionSpeed: 1
-  autoYawSpeed: 45
-  startPosition: {x: 0, y: 0, z: 0.5}
-  logPackets: 0
 --- !u!114 &788635172
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1504,6 +1508,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &788635174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 788635170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f72ef8adfefb5f64aa64c5046cdb9cb3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::XRMouseGrab
+  xrIntegration: {fileID: 788635172}
+  grabObjectManager: {fileID: 585374695}
+  toolAnimator: {fileID: 471620869}
+  preGrabTriggerName: Grab
+  grabbedTriggerName: Grabbed
+  enableDebugLogging: 1
+  onPreGrabStarted:
+    m_PersistentCalls:
+      m_Calls: []
+    m_CallsDirty: 1
+  onGrabConfirmed:
+    m_PersistentCalls:
+      m_Calls: []
+    m_CallsDirty: 1
+  onMovementUnlocked:
+    m_PersistentCalls:
+      m_Calls: []
+    m_CallsDirty: 1
+  clickState: 0
+  isMovementLocked: 0
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
