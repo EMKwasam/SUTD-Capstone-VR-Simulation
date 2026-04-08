@@ -8,7 +8,7 @@ https://github.com/LeanLabel/Depth_Camera_Controller/tree/cleanup
 - A configured controller/joystick input source. See link above for set up
 - A tracked tool feed (via UDP tracking receiver setup in scene).
 
-#Set up
+## Set up
 - Pull the files from Github and open them in Unity editor.
 - In the Heirarchy view, select the object called "XR controller"
 - Choose the desired Listening Adddress/ UDP port to match controller configurations. If default configurations are used no changes are necessary
