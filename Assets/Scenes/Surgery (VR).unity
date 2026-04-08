@@ -1456,7 +1456,6 @@ GameObject:
   m_Component:
   - component: {fileID: 788635173}
   - component: {fileID: 788635172}
-  - component: {fileID: 788635174}
   m_Layer: 0
   m_Name: XR Controller
   m_TagString: Untagged
@@ -1508,38 +1507,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &788635174
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 788635170}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f72ef8adfefb5f64aa64c5046cdb9cb3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::XRMouseGrab
-  xrIntegration: {fileID: 788635172}
-  grabObjectManager: {fileID: 585374695}
-  toolAnimator: {fileID: 471620869}
-  preGrabTriggerName: Grab
-  grabbedTriggerName: Grabbed
-  enableDebugLogging: 1
-  onPreGrabStarted:
-    m_PersistentCalls:
-      m_Calls: []
-    m_CallsDirty: 1
-  onGrabConfirmed:
-    m_PersistentCalls:
-      m_Calls: []
-    m_CallsDirty: 1
-  onMovementUnlocked:
-    m_PersistentCalls:
-      m_Calls: []
-    m_CallsDirty: 1
-  clickState: 0
-  isMovementLocked: 0
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
