@@ -239,7 +239,7 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
             return false;
         }
 
-        return switchControl.ReadValue() >= switchOnThreshold;
+        return switchControl.ReadValue() < switchOnThreshold;
     }
 
     private void HandleSwitchTurnedOn()
