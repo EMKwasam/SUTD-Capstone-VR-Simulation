@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
         
         // Count initial lesions in scene
         CountLesions();
+        totalLesions = lesionsRemaining;
         UpdateDisplay();
     }
     
@@ -62,7 +63,6 @@ public class GameManager : MonoBehaviour
     {
         GameObject[] lesions = GameObject.FindGameObjectsWithTag("Lesion");
         lesionsRemaining = lesions.Length;
-        totalLesions = lesionsRemaining; // Track total for reference
     }
     
     private void UpdateDisplay()

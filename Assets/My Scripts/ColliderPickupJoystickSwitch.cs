@@ -31,9 +31,10 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
 
     [Header("UI Messages")]
     [SerializeField] private string outOfRangeMessage = "Move tool to grabbing distance";
-    [SerializeField] private string inRangeMessage = "press button to grab lesion";
+    [SerializeField] private string inRangeMessage = "Press button to grab lesion";
     [SerializeField] private string pressTriggerToCutMessage = "Press trigger to cut";
-    [SerializeField] private string grabbedMessage = "move tool to end zone";
+    [SerializeField] private string grabbedMessage = "Move tool to end zone to extract the lesion";
+    [SerializeField] private string noLesionGrabbedMessage = "No Lesion Grabbed! Unlock tool and try again!";
 
     private readonly List<Rigidbody> candidateBodies = new List<Rigidbody>();
 
@@ -41,9 +42,6 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
     private bool isHoldingObject;
     private bool heldUsedGravity;
     private RigidbodyInterpolation heldInterpolation;
-    private Collider triggerCollider;
-    private bool isPreGrabAnimating;
-    private Rigidbody pendingGrabBody;
     private Quaternion lastHoldPointRotation;
     private bool hasLastHoldPointRotation;
     private PickupUiState currentUiState = (PickupUiState)(-1);
@@ -57,6 +55,7 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
     {
         OutOfRange,
         InRange,
+        NoLesionGrabbed,
         AwaitingCut,
         Grabbed
     }
@@ -82,7 +81,7 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
             joystickToolMovement = GetComponent<JoystickToolMovement>();
         }
 
-        triggerCollider = GetComponent<Collider>();
+        Collider triggerCollider = GetComponent<Collider>();
         if (triggerCollider != null && !triggerCollider.isTrigger)
         {
             triggerCollider.isTrigger = true;
@@ -98,7 +97,6 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
     private void Start()
     {
         SyncSwitchStateFromInput(true);
-        UpdatePickupStatusText();
     }
 
     private void Update()
@@ -182,8 +180,6 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
         {
             Debug.Log($"[ColliderPickupSwitch] Out of range: {body.name}", body);
         }
-
-        UpdatePickupStatusText();
     }
 
     private void SyncSwitchStateFromInput(bool forceImmediateSync)
@@ -250,9 +246,7 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
         }
 
         CancelActiveSwitchRoutine();
-        pendingGrabBody = null;
         ApplyImmediateSwitchVisualState(true);
-        SetToolMovementLocked(true);
         StartSwitchOnSequence();
     }
 
@@ -275,7 +269,6 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
         }
 
         ApplyImmediateSwitchVisualState(false);
-        SetToolMovementLocked(false);
     }
 
     private void ApplyImmediateSwitchVisualState(bool switchOn)
@@ -310,6 +303,8 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
         CleanupCandidates();
         TryGetClosestCandidate(out Rigidbody closestBody);
 
+        SetToolMovementLocked(closestBody != null);
+
         if (activeSwitchRoutine != null)
         {
             StopCoroutine(activeSwitchRoutine);
@@ -320,9 +315,6 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
 
     private IEnumerator PlaySwitchOnSequence(Rigidbody targetBody)
     {
-        isPreGrabAnimating = true;
-        pendingGrabBody = targetBody;
-
         if (toolAnimator != null && !string.IsNullOrEmpty(preGrabTriggerName))
         {
             toolAnimator.ResetTrigger(preGrabTriggerName);
@@ -335,12 +327,10 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        isPreGrabAnimating = false;
         activeSwitchRoutine = null;
 
         if (!isSwitchOn)
         {
-            pendingGrabBody = null;
             yield break;
         }
 
@@ -357,19 +347,16 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
                 Debug.Log("[ColliderPickupSwitch] No grabbable rigidbody available. Showing grabbed pose without attaching an object.", this);
             }
 
-            pendingGrabBody = null;
-            UpdatePickupStatusText();
+            SetToolMovementLocked(false);
             yield break;
         }
 
         if (heldRigidbody != null || isHoldingObject)
         {
-            pendingGrabBody = null;
             yield break;
         }
 
         BeginHold(targetBody);
-        pendingGrabBody = null;
     }
 
     private bool TryGetClosestCandidate(out Rigidbody closestBody)
@@ -476,9 +463,8 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
         heldRigidbody = null;
         isHoldingObject = false;
         hasLastHoldPointRotation = false;
-        pendingGrabBody = null;
-        isPreGrabAnimating = false;
         activeSwitchRoutine = null;
+        SetToolMovementLocked(false);
 
         if (enableDebugLogs)
         {
@@ -497,9 +483,6 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
             StopCoroutine(activeSwitchRoutine);
             activeSwitchRoutine = null;
         }
-
-        isPreGrabAnimating = false;
-        pendingGrabBody = null;
     }
 
     private bool IsLayerAllowed(int layer)
@@ -535,7 +518,12 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
         }
 
         PickupUiState nextState;
-        if (isSwitchOn || heldRigidbody != null || isHoldingObject)
+        bool isObjectHeld = heldRigidbody != null || isHoldingObject;
+        if (isSwitchOn && !isObjectHeld)
+        {
+            nextState = PickupUiState.NoLesionGrabbed;
+        }
+        else if (isObjectHeld)
         {
             nextState = IsInputLocked ? PickupUiState.AwaitingCut : PickupUiState.Grabbed;
         }
@@ -556,6 +544,9 @@ public class ColliderPickupJoystickSwitch : MonoBehaviour
         currentUiState = nextState;
         switch (currentUiState)
         {
+            case PickupUiState.NoLesionGrabbed:
+                pickupStatusText.text = noLesionGrabbedMessage;
+                break;
             case PickupUiState.AwaitingCut:
                 pickupStatusText.text = pressTriggerToCutMessage;
                 break;

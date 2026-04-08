@@ -42,8 +42,6 @@ public class ColliderPickupJoystickSwitchKeyboardTest : MonoBehaviour
     private bool heldUsedGravity;
     private RigidbodyInterpolation heldInterpolation;
     private Collider triggerCollider;
-    private bool isPreGrabAnimating;
-    private Rigidbody pendingGrabBody;
     private Quaternion lastHoldPointRotation;
     private bool hasLastHoldPointRotation;
     private PickupUiState currentUiState = (PickupUiState)(-1);
@@ -216,7 +214,6 @@ public class ColliderPickupJoystickSwitchKeyboardTest : MonoBehaviour
         }
 
         CancelActiveSwitchRoutine();
-        pendingGrabBody = null;
         ApplyImmediateSwitchVisualState(true);
         SetToolMovementLocked(true);
         StartSwitchOnSequence();
@@ -286,9 +283,6 @@ public class ColliderPickupJoystickSwitchKeyboardTest : MonoBehaviour
 
     private IEnumerator PlaySwitchOnSequence(Rigidbody targetBody)
     {
-        isPreGrabAnimating = true;
-        pendingGrabBody = targetBody;
-
         if (toolAnimator != null && !string.IsNullOrEmpty(preGrabTriggerName))
         {
             toolAnimator.ResetTrigger(preGrabTriggerName);
@@ -301,12 +295,10 @@ public class ColliderPickupJoystickSwitchKeyboardTest : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        isPreGrabAnimating = false;
         activeSwitchRoutine = null;
 
         if (!isSwitchOn)
         {
-            pendingGrabBody = null;
             yield break;
         }
 
@@ -323,19 +315,16 @@ public class ColliderPickupJoystickSwitchKeyboardTest : MonoBehaviour
                 Debug.Log("[ColliderPickupSwitchKeyboardTest] No grabbable rigidbody available. Showing grabbed pose without attaching an object.", this);
             }
 
-            pendingGrabBody = null;
             UpdatePickupStatusText();
             yield break;
         }
 
         if (heldRigidbody != null || isHoldingObject)
         {
-            pendingGrabBody = null;
             yield break;
         }
 
         BeginHold(targetBody);
-        pendingGrabBody = null;
     }
 
     private bool TryGetClosestCandidate(out Rigidbody closestBody)
@@ -442,8 +431,6 @@ public class ColliderPickupJoystickSwitchKeyboardTest : MonoBehaviour
         heldRigidbody = null;
         isHoldingObject = false;
         hasLastHoldPointRotation = false;
-        pendingGrabBody = null;
-        isPreGrabAnimating = false;
         activeSwitchRoutine = null;
 
         if (enableDebugLogs)
@@ -463,9 +450,6 @@ public class ColliderPickupJoystickSwitchKeyboardTest : MonoBehaviour
             StopCoroutine(activeSwitchRoutine);
             activeSwitchRoutine = null;
         }
-
-        isPreGrabAnimating = false;
-        pendingGrabBody = null;
     }
 
     private bool IsLayerAllowed(int layer)

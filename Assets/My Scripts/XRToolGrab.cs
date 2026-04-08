@@ -6,7 +6,6 @@ public class XRToolGrab : MonoBehaviour
     [SerializeField] private bool enableDebugLogging = true;
     [SerializeField] private float debugLogInterval = 0.5f; // Log every 0.5 seconds
 
-    private Vector2 joystickInput;
     private bool joystickDetectedLastFrame = false;
     private float lastDebugLogTime = 0f;
 
@@ -40,7 +39,7 @@ public class XRToolGrab : MonoBehaviour
     private void Update()
     {
         // Read joystick input from the Input System
-        joystickInput = ReadJoystickInput();
+        ReadJoystickInput();
     }
 
     private Vector2 ReadJoystickInput()
