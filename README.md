@@ -1,19 +1,26 @@
-# Surgery (VR + Controller) - Operator Quick Guide
+# Microkiap XR training Simulation
 
-## Purpose
-This scene simulates lesion extraction with a tracked surgical tool in VR. The operator moves the tool, grabs lesions, and delivers them to the end zone for removal.
-
-Scene file: `Assets/Scenes/Surgery (VR + Controller).unity`
+This is the repositroy containing the Unity assets and scripts for MicroKiap's XR training Simulation. It uses a specific scene file called Surgery (VR + Controller) located at `Assets/Scenes/Surgery (VR + Controller).unity`. Additionally, a bespoke controller is needed. To learn how to set up the controller, please visit the link here
+https://github.com/LeanLabel/Depth_Camera_Controller/tree/cleanup
 
 ## What You Need
-- A build or Unity Play Mode running this scene.
-- A configured controller/joystick input source.
+- Unity 6.3 Editor or later (Version in use is 6000.3.10f1)
+- A configured controller/joystick input source. See link above for set up
 - A tracked tool feed (via UDP tracking receiver setup in scene).
+
+#Set up
+- Pull the files from Github and open them in Unity editor.
+- In the Heirarchy view, select the object called "XR controller"
+- Choose the desired Listening Adddress/ UDP port to match controller configurations. If default configurations are used no changes are necessary
+- Start the Depth Camera Controller code
+- Run the scene in editor
+
 
 ## Controls (Operator View)
 - Switch (`button2`): toggles tool between release/grab workflow.
 - Trigger: unlocks tool movement when lock is active.
 - Move tool physically/through tracker to approach lesions and move to extraction zone.
+- Press "R" to reload the scene
 
 Note: In the current project configuration for this scene, switch state interpretation is custom.
 
@@ -31,14 +38,3 @@ Note: In the current project configuration for this scene, switch state interpre
 - No Lesion Grabbed! Unlock tool and try again!: switch is engaged but nothing attached.
 - Press trigger to cut: movement lock state is active.
 - Move tool to end zone to extract the lesion: lesion is attached and ready for extraction.
-
-## Troubleshooting (Quick)
-- Tool does not move: check tracker feed and target object assignment.
-- Cannot grab lesion: confirm lesion is in range and on pickup layers.
-- Counter not updating: verify lesion tag is `Lesion` and end zone trigger is active.
-- Stuck after toggling: press trigger to unlock, then retry approach and grab.
-
-## Known Limits (Operator-facing)
-- Grabbing depends on trigger overlap and nearest rigidbody candidate.
-- Extraction requires correct lesion tagging and end zone trigger contact.
-- Input mapping may vary by controller profile.
