@@ -29,6 +29,9 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     [Header("Target")]
     [SerializeField] private Transform targetObject;             // Object to move in Unity
 
+    [Header("Locking")]
+    [SerializeField] private JoystickToolMovement joystickToolMovement; // Reads the shared movement lock state
+
     [Header("Calibration")]
     [SerializeField] private bool autoCalibrateOnFirstPacket = true; // Auto-set origin from first received pose
 
@@ -106,6 +109,9 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     private Vector3 oneEuroPreviousRawPosition;
     private Vector3 oneEuroFilteredPosition;
     private Vector3 oneEuroFilteredDerivative;
+    private bool isExternallyMovementLocked;
+
+    public bool IsExternallyMovementLocked => isExternallyMovementLocked;
 
     private void Start()
     {
@@ -115,6 +121,16 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
             Debug.LogError("UdpTrackedPoseReceiver: targetObject is not assigned.");
             enabled = false;
             return;
+        }
+
+        if (joystickToolMovement == null)
+        {
+            joystickToolMovement = GetComponent<JoystickToolMovement>();
+
+            if (joystickToolMovement == null)
+            {
+                joystickToolMovement = targetObject.GetComponentInParent<JoystickToolMovement>();
+            }
         }
 
         // Initialize smoothing state from current transform
@@ -179,6 +195,11 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
         {
             deadbandReferencePosition = desiredPosition;
             hasDeadbandReference = true;
+        }
+
+        if (IsMovementLocked())
+        {
+            return;
         }
 
         // Smooth position if enabled
@@ -492,5 +513,20 @@ public class UdpTrackedPoseReceiver : MonoBehaviour
     private void OnApplicationQuit()
     {
         StopReceiver();
+    }
+
+    private bool IsMovementLocked()
+    {
+        if (isExternallyMovementLocked)
+        {
+            return true;
+        }
+
+        return joystickToolMovement != null && joystickToolMovement.IsMovementLocked;
+    }
+
+    public void SetMovementLocked(bool locked)
+    {
+        isExternallyMovementLocked = locked;
     }
 }

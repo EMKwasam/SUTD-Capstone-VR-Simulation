@@ -770,6 +770,7 @@ GameObject:
   - component: {fileID: 480423913}
   - component: {fileID: 480423915}
   - component: {fileID: 480423917}
+  - component: {fileID: 480423918}
   m_Layer: 0
   m_Name: Grabpoint
   m_TagString: Untagged
@@ -820,7 +821,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 480423912}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a5b9a1041d3208842a3110612629e3e5, type: 3}
   m_Name: 
@@ -833,13 +834,42 @@ MonoBehaviour:
   pickupLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  enableDebugLogs: 1
+  enableDebugLogs: 0
   switchControlName: trigger
   switchOnThreshold: 1
   preGrabTriggerName: Grab
   grabbedTriggerName: Grabbed
   preGrabDuration: 0.35
   lockToolControlsDuringPreGrab: 1
+  outOfRangeMessage: Move tool to grabbing distance
+  inRangeMessage: Press button to grab lesion
+  pressTriggerToCutMessage: Press trigger to cut
+  grabbedMessage: Move tool to end zone to extract the lesion
+  noLesionGrabbedMessage: No Lesion Grabbed! Unlock tool and try again!
+--- !u!114 &480423918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 480423912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63f93fac1723b084b863d267c11b38a1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColliderPickupJoystickSwitchNoAnim
+  holdPoint: {fileID: 1629714653}
+  grabObjectManager: {fileID: 585374695}
+  pickupStatusText: {fileID: 2019468352}
+  joystickToolMovement: {fileID: 0}
+  trackedPoseReceiver: {fileID: 788635172}
+  pickupLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  enableDebugLogs: 0
+  switchControlName: trigger
+  movementReleaseControlName: button2
+  switchOnThreshold: 0.5
   outOfRangeMessage: Move tool to grabbing distance
   inRangeMessage: Press button to grab lesion
   pressTriggerToCutMessage: Press trigger to cut
@@ -1313,6 +1343,7 @@ MonoBehaviour:
   listenAddress: 127.0.0.1
   listenPort: 5005
   targetObject: {fileID: 1241154556}
+  joystickToolMovement: {fileID: 0}
   autoCalibrateOnFirstPacket: 1
   enablePositionSmoothing: 1
   positionSmoothingMethod: 2
@@ -1325,8 +1356,8 @@ MonoBehaviour:
   positionScaleMultiplier: 2
   enableDeadband: 1
   positionDeadbandMeters: 0.01
-  logPackets: 1
-  logCalibration: 1
+  logPackets: 0
+  logCalibration: 0
 --- !u!4 &788635173
 Transform:
   m_ObjectHideFlags: 0
