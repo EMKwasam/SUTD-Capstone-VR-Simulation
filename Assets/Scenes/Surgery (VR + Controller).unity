@@ -834,8 +834,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   enableDebugLogs: 1
-  switchControlName: button2
-  switchOnThreshold: 0.5
+  switchControlName: trigger
+  switchOnThreshold: 1
   preGrabTriggerName: Grab
   grabbedTriggerName: Grabbed
   preGrabDuration: 0.35
