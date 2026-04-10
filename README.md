@@ -1,40 +1,53 @@
-# Microkiap XR training Simulation
+# My Scripts
 
-This is the repositroy containing the Unity assets and scripts for MicroKiap's XR training Simulation. It uses a specific scene file called Surgery (VR + Controller) located at `Assets/Scenes/Surgery (VR + Controller).unity`. Additionally, a bespoke controller is needed. To learn how to set up the controller, please visit the link here
-https://github.com/LeanLabel/Depth_Camera_Controller/tree/cleanup
+This folder contains the custom Unity scripts used for the surgery simulation. The scripts are organized around tool interaction, tracking and input, game state, and debugging or legacy support.
 
-## What You Need
-- Unity 6.3 Editor or later (Version in use is 6000.3.10f1)
-- A configured controller/joystick input source. See link above for set up
-- A tracked tool feed (via UDP tracking receiver setup in scene).
+## Folder Layout
 
-## Set up
-- Pull the files from Github and open them in Unity editor.
-- In the Heirarchy view, select the object called "XR controller"
-- Choose the desired Listening Adddress/ UDP port to match controller configurations. If default configurations are used no changes are necessary
-- Start the Depth Camera Controller code
-- Run the scene in editor
+- Root scripts:
+	- `ColliderPickupJoystickSwitch.cs`: Main joystick-driven grab flow for the surgical tool.
+	- `ColliderPickupJoystickSwitchKeyboardTest.cs`: Keyboard test version of the joystick switch workflow.
+	- `ColliderPickupJoystickSwitchNoAnim.cs`: Joystick switch workflow variant that skips animation-driven behavior.
+	- `EndZone.cs`: Detects lesion entry into the extraction zone and removes the lesion.
+	- `GameManager.cs`: Tracks remaining lesions and updates the on-screen counter.
+	- `GrabObjectManager.cs`: Toggles visual or object state when the tool is grabbed or released.
+	- `XRIntegration.cs`: Contains `UdpTrackedPoseReceiver`, the UDP pose receiver used for tracked tool motion.
+	- `XRToolGrab.cs`: Joystick input diagnostics and control logging.
+- Subfolders:
+	- `Legacy/`
+	- `Utility/`
 
+## Legacy Scripts
 
-## Controls (Operator View)
-- Switch (`button2`): toggles tool between release/grab workflow.
-- Trigger: unlocks tool movement when lock is active.
-- Move tool physically/through tracker to approach lesions and move to extraction zone.
-- Press "R" to reload the scene
+The Legacy folder keeps earlier interaction and movement scripts that are no longer the primary path but may still be useful for reference or fallback testing.
 
-Note: In the current project configuration for this scene, switch state interpretation is custom.
+- `ColliderPickupJoystick.cs`: Earlier joystick-based pickup flow.
+- `ColliderPickupKeyboard.cs`: Keyboard-driven pickup flow.
+- `ColliderPickupMouse.cs`: Mouse-driven pickup flow.
+- `JoystickToolMovement.cs`: Joystick movement controller for the tool.
+- `KeyboardToolMovement.cs`: Keyboard movement controller for the tool.
+- `MousePickup.cs`: Mouse interaction helper for picking up objects.
 
-## Basic Workflow
-1. Start scene and verify lesion counter is visible.
-2. Move tool close to a lesion.
-3. Toggle switch to engage grab sequence.
-4. If lesion is grabbed, move to end zone and extract.
-5. If message says no lesion grabbed, unlock tool and retry.
-6. Repeat until lesion counter reaches zero.
+## Utility Scripts
 
-## On-screen Messages (What They Mean)
-- Move tool to grabbing distance: no valid lesion in range.
-- Press button to grab lesion: lesion is in range and ready.
-- No Lesion Grabbed! Unlock tool and try again!: switch is engaged but nothing attached.
-- Press trigger to cut: movement lock state is active.
-- Move tool to end zone to extract the lesion: lesion is attached and ready for extraction.
+The Utility folder contains debugging and test helpers for input and tracking.
+
+- `DeviceDebugger.cs`: Logs all detected input devices and their controls.
+- `GamepadDebug.cs`: Displays live gamepad input values.
+- `InputTest.cs`: Tests input action values and XR interaction state.
+- `JoystickDebug.cs`: Displays live joystick input values.
+- `XRTest.cs`: Contains `UdpTrackedPoseTestSender`, a local UDP pose sender for testing the tracking receiver.
+
+## Script Roles
+
+- Pickup scripts handle candidate detection, grab timing, release behavior, and on-screen status messages.
+- Tracking scripts move the tool using UDP pose data and controller input.
+- Manager scripts coordinate lesion scoring, object state changes, and extraction behavior.
+- Debug scripts help confirm that Unity Input System devices, XR interaction state, and UDP pose packets are working correctly.
+
+## Notes
+
+- Lesion objects are expected to use the Lesion tag.
+- The end zone expects a trigger collider.
+- Several scripts depend on Unity Input System, TextMeshPro, and XR-related packages.
+- The legacy folder is kept for reference and comparison, not as the primary runtime path.
