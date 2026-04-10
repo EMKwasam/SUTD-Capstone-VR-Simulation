@@ -1,4 +1,10 @@
-# My Scripts
+# Microkiap XR training Simulation (Development branch)
+
+This branch contains all code and assets that were created/ used during the development cycle of the MicroKiap XR simulation. Due to this there may be code that is incomplete or non-functional since it was meant to support now depreciated features. However, it was kept here as a reference.
+
+## My Scripts Folder
+
+Located at `Assets/My Scripts`
 
 This folder contains the custom Unity scripts used for the surgery simulation. The scripts are organized around tool interaction, tracking and input, game state, and debugging or legacy support.
 
@@ -45,7 +51,7 @@ The Utility folder contains debugging and test helpers for input and tracking.
 - Manager scripts coordinate lesion scoring, object state changes, and extraction behavior.
 - Debug scripts help confirm that Unity Input System devices, XR interaction state, and UDP pose packets are working correctly.
 
-## Notes
+## Developer Notes
 
 - Lesion objects are expected to use the Lesion tag.
 - The end zone expects a trigger collider.
