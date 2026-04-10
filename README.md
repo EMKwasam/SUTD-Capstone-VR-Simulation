@@ -1,7 +1,8 @@
 # Microkiap XR training Simulation
 
 This is the repositroy containing the Unity assets and scripts for MicroKiap's XR training Simulation. It uses a specific scene file called Surgery (VR + Controller) located at `Assets/Scenes/Surgery (VR + Controller).unity`. Additionally, a bespoke controller is needed. To learn how to set up the controller, please visit the link here
-https://github.com/LeanLabel/Depth_Camera_Controller/tree/cleanup
+
+https://github.com/LeanLabel/Depth_Camera_Controller
 
 ## What You Need
 - Unity 6.3 Editor or later (Version in use is 6000.3.10f1)
