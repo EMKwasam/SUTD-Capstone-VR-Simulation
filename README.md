@@ -16,25 +16,14 @@ https://github.com/LeanLabel/Depth_Camera_Controller/tree/cleanup
 - Run the scene in editor
 
 
-## Controls (Operator View)
-- Switch (`button2`): toggles tool between release/grab workflow.
-- Trigger: unlocks tool movement when lock is active.
-- Move tool physically/through tracker to approach lesions and move to extraction zone.
-- Press "R" to reload the scene
+## Controls (MicroKiap controller + Keyboard)
+- Side Switch (Called `trigger` in Unity): toggles tool between release/grab workflow.
+- Handle (Called `Button2` in Unity): Simulates cutting by unlocking tool movement after it is grabbed by MicroKiap.
+- Move MicroKiap by moving the controller physically to approach lesions. Once the lesion is grabbed move to the extraction zone to complete the extraction
+- Press the `R` key on the keyboard on the to reload the scene/ reset position of MicroKiap
 
-Note: In the current project configuration for this scene, switch state interpretation is custom.
 
 ## Basic Workflow
-1. Start scene and verify lesion counter is visible.
-2. Move tool close to a lesion.
-3. Toggle switch to engage grab sequence.
-4. If lesion is grabbed, move to end zone and extract.
-5. If message says no lesion grabbed, unlock tool and retry.
-6. Repeat until lesion counter reaches zero.
-
-## On-screen Messages (What They Mean)
-- Move tool to grabbing distance: no valid lesion in range.
-- Press button to grab lesion: lesion is in range and ready.
-- No Lesion Grabbed! Unlock tool and try again!: switch is engaged but nothing attached.
-- Press trigger to cut: movement lock state is active.
-- Move tool to end zone to extract the lesion: lesion is attached and ready for extraction.
+1. Start scene by pressing the play button in Unity Editor
+2. Follow instructions on scene to extract the lesion
+3. Stop the simulation by pressing the stop button in Unity Editor
