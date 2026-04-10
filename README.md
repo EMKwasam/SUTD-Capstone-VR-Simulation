@@ -24,6 +24,7 @@ https://github.com/LeanLabel/Depth_Camera_Controller/tree/cleanup
 
 
 ## Basic Workflow
+<img width="1283" height="294" alt="image" src="https://github.com/user-attachments/assets/2e2a8d3d-c947-4593-b22d-c6f65bf0aae2" />
 1. Start scene by pressing the play button in Unity Editor
 2. Follow instructions on scene to extract the lesion
-3. Stop the simulation by pressing the stop button in Unity Editor
+3. Stop the simulation by pressing the stop button (Located in the same spot as the start button) in Unity Editor
