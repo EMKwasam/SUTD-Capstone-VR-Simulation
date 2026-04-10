@@ -235,7 +235,7 @@ public class ColliderPickupJoystickSwitchNoAnim : MonoBehaviour
 
         if (string.Equals(switchControlName, "trigger", System.StringComparison.OrdinalIgnoreCase))
         {
-            return joystick.trigger != null && joystick.trigger.ReadValue() >= switchOnThreshold;
+            return joystick.trigger != null && joystick.trigger.ReadValue() < switchOnThreshold;
         }
 
         ButtonControl switchControl = joystick.TryGetChildControl<ButtonControl>(switchControlName);
@@ -244,7 +244,7 @@ public class ColliderPickupJoystickSwitchNoAnim : MonoBehaviour
             return false;
         }
 
-        return switchControl.ReadValue() >= switchOnThreshold;
+        return switchControl.ReadValue() < switchOnThreshold;
     }
 
     private bool WasButtonPressedThisFrame(Joystick joystick, string controlName)
