@@ -5,7 +5,7 @@ This is the repositroy containing the Unity assets and scripts for MicroKiap's X
 https://github.com/LeanLabel/Depth_Camera_Controller
 
 ## What You Need
-- Unity 6.3 Editor or later (Version in use is 6000.3.10f1)
+- Unity Hub with Unity 6.3 Editor or later installed (Version in use is 6000.3.10f1)
 - A configured controller/joystick input source. See link above for set up
 - A tracked tool feed (via UDP tracking receiver setup in scene).
 
